@@ -19,6 +19,8 @@
       padding: 15px 30px;
       border: 1px solid #ccc;
       border-radius: 8px;
+      min-width: 300px;
+      text-align: center;
     }
     #name-input {
       font-size: 16px;
@@ -36,24 +38,44 @@
       cursor: pointer;
       font-weight: bold;
     }
+    #check-btn:active {
+      background: #e6c200;
+    }
   </style>
 </head>
 <body>
   <p id="message-box">Enter a name and click the button.</p>
   <input type="text" id="name-input" placeholder="Type a name here..." />
-  <button id="check-btn" onclick="checkName()">Check</button>
+  <button id="check-btn">Check</button>
 
   <script>
-    // *** EDIT THIS LIST with your actual names ***
-    const nameList = ["alice", "bob", "charlie", "diana"];
+    // *** EDIT THESE LISTS with your actual names ***
+    const listA = ["alice", "bob"];
+    const listB = ["charlie", "diana"];
+    const listC = ["edward", "fiona"];
+    // Add more lists here if needed, e.g:
+    // const listD = ["george", "hannah"];
 
-    function checkName() {
+    // Combine all lists into one master list
+    const allNames = [...listA, ...listB, ...listC];
+
+    document.getElementById("check-btn").addEventListener("click", function() {
       const input = document.getElementById("name-input").value.trim().toLowerCase();
       const box = document.getElementById("message-box");
-      if (!nameList.includes(input)) {
-        box.textContent = "Name not found 123!"; // *** Change this message too ***
+
+      if (input === "") {
+        box.textContent = "Please enter a name.";
+        return;
       }
-    }
+
+      if (allNames.includes(input)) {
+        // Name IS on a list — ignore it, reset to default
+        box.textContent = "Enter a name and click the button.";
+      } else {
+        // Name is NOT on any list — display the entered name
+        box.textContent = input;
+      }
+    });
   </script>
 </body>
 </html>
