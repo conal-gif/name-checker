@@ -124,73 +124,96 @@
   <input type="text" id="name-input" placeholder="type the name of your crush..." />
   <button id="upload-btn">Upload</button>
 
-  <script>
-    // *** PASTE YOUR FIREBASE REALTIME DATABASE URL HERE ***
-    const FIREBASE_URL = "https://my-crush-278a7-default-rtdb.asia-southeast1.firebasedatabase.app/";
+<script>
+  // *** PASTE YOUR FIREBASE REALTIME DATABASE URL HERE ***
+  const FIREBASE_URL = "https://YOUR-PROJECT-ID-default-rtdb.firebaseio.com";
 
-    // *** EDIT THESE LISTS with your actual names to block ***
-    const listA = ["alice", "bob"];
-    const listB = ["charlie", "diana"];
-    const listC = ["edward", "fiona"];
-    const allNames = [...listA, ...listB, ...listC];
+  // *** EXACT MATCH LIST — names that are blocked entirely ***
+  const listA = ["alice", "bob"];
+  const listB = ["charlie", "diana"];
+  const listC = ["edward", "fiona"];
+  const allNames = [...listA, ...listB, ...listC];
 
-    const nameDisplay = document.getElementById("current-name");
-    const statusMsg = document.getElementById("status-msg");
-    const input = document.getElementById("name-input");
+  // *** CONTAINS LIST — if any of these words appear anywhere in the input, it is blocked ***
+  const blockedWords = [
+    "badword1",
+    "badword2",
+    "badword3"
+    // Add as many as you need
+  ];
 
-    // Load the current name from Firebase on page load
-    function loadCurrentName() {
-      fetch(`${FIREBASE_URL}/crush.json`)
-        .then(r => r.json())
-        .then(data => {
-          nameDisplay.textContent = data && data.name ? data.name : "—";
-        })
-        .catch(() => {
-          nameDisplay.textContent = "—";
-        });
+  const nameDisplay = document.getElementById("current-name");
+  const statusMsg = document.getElementById("status-msg");
+  const input = document.getElementById("name-input");
+
+  // Check if the input contains any blocked word as a substring
+  function containsBlockedWord(text) {
+    const lower = text.toLowerCase();
+    return blockedWords.some(word => lower.includes(word.toLowerCase()));
+  }
+
+  // Load the current name from Firebase on page load
+  function loadCurrentName() {
+    fetch(`${FIREBASE_URL}/crush.json`)
+      .then(r => r.json())
+      .then(data => {
+        nameDisplay.textContent = data && data.name ? data.name : "—";
+      })
+      .catch(() => {
+        nameDisplay.textContent = "—";
+      });
+  }
+
+  loadCurrentName();
+  setInterval(loadCurrentName, 5000);
+
+  document.getElementById("upload-btn").addEventListener("click", function () {
+    const rawInput = input.value.trim();
+    const lowerInput = rawInput.toLowerCase();
+
+    statusMsg.style.color = "white";
+
+    if (rawInput === "") {
+      statusMsg.textContent = "Please type a name first.";
+      return;
     }
 
-    // Poll Firebase every 5 seconds so the display stays live
-    loadCurrentName();
-    setInterval(loadCurrentName, 5000);
+    // Check 1: exact match block list
+    if (allNames.includes(lowerInput)) {
+      statusMsg.textContent = "That name is not available.";
+      input.value = "";
+      return;
+    }
 
-    document.getElementById("upload-btn").addEventListener("click", function () {
-      const rawInput = input.value.trim();
-      const lowerInput = rawInput.toLowerCase();
+    // Check 2: contains a blocked word anywhere within the input
+    if (containsBlockedWord(rawInput)) {
+      statusMsg.textContent = "That name is not available.";
+      input.value = "";
+      return;
+    }
 
-      statusMsg.style.color = "white";
-
-      if (rawInput === "") {
-        statusMsg.textContent = "Please type a name first.";
-        return;
-      }
-
-      if (allNames.includes(lowerInput)) {
-        statusMsg.textContent = "That name is not available.";
+    // Passed both checks — upload to Firebase
+    fetch(`${FIREBASE_URL}/crush.json`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: rawInput })
+    })
+      .then(r => r.json())
+      .then(() => {
+        nameDisplay.textContent = rawInput;
+        statusMsg.style.color = "#FFD700";
+        statusMsg.textContent = "Uploaded!";
         input.value = "";
-        return;
-      }
-
-      // Name passed — upload to Firebase
-      fetch(`${FIREBASE_URL}/crush.json`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: rawInput })
+        setTimeout(() => statusMsg.textContent = "", 3000);
       })
-        .then(r => r.json())
-        .then(() => {
-          nameDisplay.textContent = rawInput;
-          statusMsg.style.color = "#FFD700";
-          statusMsg.textContent = "Uploaded!";
-          input.value = "";
-          setTimeout(() => statusMsg.textContent = "", 3000);
-        })
-        .catch(() => {
-          statusMsg.style.color = "white";
-          statusMsg.textContent = "Upload failed. Please try again.";
-        });
-    });
-  </script>
+      .catch(() => {
+        statusMsg.style.color = "white";
+        statusMsg.textContent = "Upload failed. Please try again.";
+      });
+  });
+</script>
+
+  
 
 </body>
 </html>
