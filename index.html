@@ -122,14 +122,14 @@
 
   // *** EXACT MATCH BLOCK LIST ***
   const listA = ["faggot", "cunny", "cunni", "diddy", "skank","vag", "slit" ,"chesticle", "testicle" ,"testicles" ,"clit" ,"dilf" ,"milf","di1f" ,"mi1f" ,"hitler" ,"hitler", "stalin" , "putin", "Trump", "hardon" , "jism"  ];
-  const listB = ["s1ut", "hitler", "fa99ot", "fagg0t", "homo", "anus", "arsehole", "azzhole", "bollocks", "nig" , "nog", "niga" , "nigga", "nigger",  "ni99er", "cum" ,"cumming" ,"currymuncher" ,"darkie","darkies", "fellatio","ghey", "ghay", "jewboy" ];
-  const listC = [, "balls", "balllicker" ,"bigbreasts" ,"bestiality" ,"biatch" ,"bumfuck" ,"bumfucker" ,"cntz", "cnts", "cnut" ,"cracker",  "gypsys", "hezbollah", "hamas", "isis" ,"jisim" ,"jizim" ];
+  const listB = ["s1ut", "hitler", "fa99ot", "fagg0t", "homo", "anus", "arsehole", "azzhole", "bollocks", "nig" , "nog","nogger", "niga" , "nigga", "ni99er", "cum" ,"cumming" ,"currymuncher" ,"darkie","darkies", "fellatio","ghey", "ghay", "jewboy" ];
+  const listC = ["nazi", "hoe", "skank", "whore", "d1ck", "balls", "balllicker" ,"bigbreasts" ,"bestiality" ,"biatch" ,"bumfuck" ,"bumfucker" ,"cntz", "cnts", "cnut" ,"cracker",  "gypsys", "hezbollah", "hamas", "isis" ,"jisim" ,"jizim" ];
   const allNames = [...listA, ...listB, ...listC];
 
   // *** CONTAINS BLOCK LIST ***
   const blockedWords = [
-    "!", "@", "#", "$" , "bitch", "nigger", "shit","nazi", "hoe", "skank", "whore", "d1ck", "cunt", "slut", "whore", "vagina", "cock" ,"dyke", "dike" ,"lezbo" ,"ass", "penis","arrse",  "arse", "cunt", "fag", "nazi","naz1", "pussy" , "slut", "wank", "jerk" , "blowjob","fatfucker", "boner", "bum", "butt"  , "dipshit" ,"peepee" ,"poopoo", "holestuffer", "massterb", "masterb", "master", "mastur",
-    "fuck", "lick", "fanny", "dick","d1ck", "cock", "chink", "slant" , "f4g" , "fa9", "anal", "bareback", "bastard", "boobie", "booby", "diaper", "gook", "hardcore", "jackoff", "kike", "kyke", "molest", "muff", "negro", "negr0", "negres", "niggar", "niggah", 
+    "bitch", "nigger", "shit","nazi", "hoe", "skank", "whore", "d1ck", "cunt", "slut", "whore", "vagina", "cock" ,"dyke", "dike" ,"lezbo" ,"ass", "penis","arrse",  "arse", "cunt", "fag", "nazi","naz1", "pussy" , "slut", "wank", "jerk" , "blowjob","fatfucker", "boner", "bum", "butt"  , "dipshit" ,"peepee" ,"poopoo", "holestuffer", "massterb", "masterb", "master", "mastur",
+    "fuck", "lick", "fanny", "dick","d1ck", "cock", "chink", "slant" , "f4g" , "fa9", "anal", "bareback", "bastard", "boobie", "booby", "diaper", "gook", "hardcore", "jackoff", "kike", "kyke", "molest", "muff", "negro", "negr0", "negres", "niggar", "nigger" ,"niggah", 
     "boob", "booob", "boooob", "booooob", "b00b", "b000b", "b0000b", "b00000b" , "breast" , "gay", "lesbian", "lezbian" ,"dildo" ,"dingleber", "golliwog", "goldenshower" , "fukah", "fuker", "fukkah", "fukker", "nigg", "orgasim", "terror", 
     "bukake", "bukkake" ,"crotch", "creampie" ,"deepthroat" ,"doggiestyle" ,"douche" ,"doublepenetration", "ejaculat" ,"ejackulat" ,"fanny", "fart", "fcuk", "feltch" ,"fuktard", "goddam", "cammeltoe", "paedophile" , "peeenus" ,"pantie" ,"panty" 
   ];
@@ -145,8 +145,6 @@
     "Charlotte",
     "Morgan",
     "Johnny"
-    
-    // Add as many as you like
   ];
 
   // How long to wait before cycling to next good name (milliseconds)
@@ -161,9 +159,9 @@
   let cycleTimer = null;
 
   // --- Filtering ---
-  function containsSpecialCharacters(text) {
-    // Check if text contains any special characters (anything that's not a letter, number, or space)
-    return /[^a-zA-Z0-9\s]/.test(text);
+  function containsSpecialCharactersOrNumbers(text) {
+    // Only allow letters (a-z, A-Z) and spaces - block everything else (numbers and special characters)
+    return /[^a-zA-Z\s]/.test(text);
   }
 
   function containsBlockedWord(text) {
@@ -252,8 +250,8 @@
       return;
     }
 
-    if (containsSpecialCharacters(rawInput)) {
-      statusMsg.textContent = "Special characters are not allowed.";
+    if (containsSpecialCharactersOrNumbers(rawInput)) {
+      statusMsg.textContent = "Only letters and spaces are allowed.";
       input.value = "";
       return;
     }
