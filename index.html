@@ -122,7 +122,7 @@
 
   // *** EXACT MATCH BLOCK LIST ***
   const listA = ["faggot", "cunny", "cunni", "diddy", "skank","vag", "slit" ,"chesticle", "testicle" ,"testicles" ,"clit" ,"dilf" ,"milf","di1f" ,"mi1f" ,"hitler" ,"hitler", "stalin" , "putin", "Trump", "hardon" , "jism"  ];
-  const listB = ["s1ut", "hitler", "fa99ot", "fagg0t", "homo", "anus", "arsehole", "azzhole", "bollocks", "nig" , "nog","nogger", "niga" , "nigga", "ni99er", "cum" ,"cumming" ,"currymuncher" ,"darkie","darkies", "fellatio","ghey", "ghay", "jewboy" ];
+  const listB = ["s1ut", "hitler", "fa99ot", "fagg0f", "homo", "anus", "arsehole", "azzhole", "bollocks", "nig" , "nog","nogger", "niga" , "nigga", "ni99er", "cum" ,"cumming" ,"currymuncher" ,"darkie","darkies", "fellatio","ghey", "ghay", "jewboy" ];
   const listC = ["nazi", "hoe", "skank", "whore", "d1ck", "balls", "balllicker" ,"bigbreasts" ,"bestiality" ,"biatch" ,"bumfuck" ,"bumfucker" ,"cntz", "cnts", "cnut" ,"cracker",  "gypsys", "hezbollah", "hamas", "isis" ,"jisim" ,"jizim" ];
   const allNames = [...listA, ...listB, ...listC];
 
@@ -159,9 +159,9 @@
   let cycleTimer = null;
 
   // --- Filtering ---
-  function containsSpecialCharactersOrNumbers(text) {
-    // Only allow letters (a-z, A-Z) and spaces - block everything else (numbers and special characters)
-    return /[^a-zA-Z\s]/.test(text);
+  function containsInvalidCharacters(text) {
+    // Only allow letters (a-z, A-Z) - block numbers, spaces, and special characters
+    return /[^a-zA-Z]/.test(text);
   }
 
   function containsBlockedWord(text) {
@@ -250,8 +250,8 @@
       return;
     }
 
-    if (containsSpecialCharactersOrNumbers(rawInput)) {
-      statusMsg.textContent = "Only letters and spaces are allowed.";
+    if (containsInvalidCharacters(rawInput)) {
+      statusMsg.textContent = "Letters only, no numbers or spaces.";
       input.value = "";
       return;
     }
