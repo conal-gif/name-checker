@@ -15,7 +15,6 @@
     body {
       font-family: 'Barlow', sans-serif;
       height: 100vh;
-      max-height: 100vh;
       overflow: hidden;
       background-image: url('background.jpg');
       background-size: cover;
@@ -24,18 +23,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      padding: 48px 30px 28px;
-    }
-
-    /* ── Top section ── */
-    .top-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      max-width: 420px;
-      gap: 14px;
+      justify-content: center;  /* centres everything vertically */
+      padding: 0 30px;
+      gap: 0;
     }
 
     #hashtag {
@@ -44,13 +34,15 @@
       color: #FFD700;
       text-align: center;
       width: 100%;
-      line-height: 1.1;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+      max-width: 420px;
       white-space: nowrap;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+      margin-bottom: 12px;
     }
 
     #current-name {
       width: 100%;
+      max-width: 420px;
       background: white;
       border: 3px solid white;
       border-radius: 10px;
@@ -64,6 +56,7 @@
       align-items: center;
       justify-content: center;
       font-family: 'Barlow', sans-serif;
+      margin-bottom: 8px;
     }
 
     #status-msg {
@@ -73,20 +66,12 @@
       text-align: center;
       min-height: 20px;
       text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    }
-
-    /* ── Bottom section ── */
-    .bottom-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      max-width: 420px;
-      gap: 14px;
+      margin-bottom: 28px; /* gap between top group and bottom group */
     }
 
     #name-input {
       width: 100%;
+      max-width: 420px;
       background: white;
       border: 3px solid white;
       border-radius: 10px;
@@ -96,6 +81,7 @@
       padding: 14px 20px;
       font-family: 'Barlow', sans-serif;
       outline: none;
+      margin-bottom: 12px;
     }
 
     #name-input::placeholder {
@@ -118,13 +104,14 @@
       letter-spacing: 0.5px;
       -webkit-tap-highlight-color: transparent;
       transition: background 0.15s;
+      margin-bottom: 16px;
     }
 
     #upload-btn:active { background: #e6c200; }
 
     #logo {
-      width: 55%;
-      max-width: 200px;
+      width: 50%;
+      max-width: 180px;
       object-fit: contain;
       display: block;
     }
@@ -132,17 +119,13 @@
 </head>
 <body>
 
-  <div class="top-section">
-    <div id="hashtag">#YourNewCrush</div>
-    <div id="current-name">Loading...</div>
-    <div id="status-msg"></div>
-  </div>
+  <div id="hashtag">#YourNewCrush</div>
+  <div id="current-name">Loading...</div>
+  <div id="status-msg"></div>
 
-  <div class="bottom-section">
-    <input type="text" id="name-input" placeholder="type the name of your crush..." />
-    <button id="upload-btn">Upload</button>
-    <img id="logo" src="logoOverlay.png" alt="Logo" />
-  </div>
+  <input type="text" id="name-input" placeholder="type the name of your crush..." />
+  <button id="upload-btn">Upload</button>
+  <img id="logo" src="logoOverlay.png" alt="Logo" />
 
 <script>
   const FIREBASE_URL = "https://my-crush-278a7-default-rtdb.asia-southeast1.firebasedatabase.app";
