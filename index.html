@@ -130,7 +130,6 @@
 <script>
   const FIREBASE_URL = "https://my-crush-278a7-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-  // *** GOOD NAMES — cycled automatically when no submission for 5 minutes ***
   const goodNames = [
     "Emma", "Liam", "Olivia", "Noah", "Ava", "Jack", "Charlotte", "Morgan", "Johnny"
   ];
@@ -142,28 +141,79 @@
   const input       = document.getElementById("name-input");
   const btn         = document.getElementById("upload-btn");
 
-  // Approved names loaded from names.txt — stored as a Set for fast lookup
-  let approvedNames = null; // null = still loading, Set = ready
+  // Cache for already-loaded letter sets — avoids re-downloading the same file
+  const nameCache = {};
+  let currentFetchLetter = null;
+  let currentLetterSet = null;
 
-  // Load approved names from names.txt on page start
-  fetch("names.txt")
-    .then(r => {
-      if (!r.ok) throw new Error("Could not load names list");
-      return r.text();
-    })
-    .then(text => {
-      approvedNames = new Set(
-        text.split("\n")
-            .map(n => n.trim().toLowerCase())
-            .filter(n => n.length > 0)
-      );
-    })
-    .catch(() => {
-      // If names.txt fails to load, fail open with a warning in console
-      // but don't break the page — you can choose to fail closed instead
-      console.warn("names.txt could not be loaded. All names will be blocked.");
-      approvedNames = new Set(); // empty set = nothing gets through
+  // Fetch the names file for a given first letter
+  function loadNamesForLetter(letter) {
+    letter = letter.toLowerCase();
+
+    // Already cached — use it immediately
+    if (nameCache[letter]) {
+      currentLetterSet = nameCache[letter];
+      return;
+    }
+
+    // Already fetching this letter — don't double-fetch
+    if (currentFetchLetter === letter) return;
+
+    currentFetchLetter = letter;
+    currentLetterSet = null; // mark as loading
+
+    fetch(`names-${letter}.txt`)
+      .then(r => {
+        if (!r.ok) throw new Error(`No file for letter: ${letter}`);
+        return r.text();
+      })
+      .then(text => {
+        const nameSet = new Set(
+          text.split("\n")
+              .map(n => n.trim().toLowerCase())
+              .filter(n => n.length > 0)
+        );
+        nameCache[letter] = nameSet;
+        // Only apply if user hasn't moved to a different letter since
+        if (currentFetchLetter === letter) {
+          currentLetterSet = nameSet;
+        }
+      })
+      .catch(() => {
+        // File missing or empty — treat as no approved names for that letter
+        nameCache[letter] = new Set();
+        if (currentFetchLetter === letter) {
+          currentLetterSet = nameCache[letter];
+        }
+      });
+  }
+
+  // Pre-fetch the most common starting letters in the background after page load
+  function prefetchCommonLetters() {
+    const common = ["a","b","c","d","e","j","k","l","m","n","o","r","s","t"];
+    common.forEach((letter, i) => {
+      setTimeout(() => {
+        if (!nameCache[letter]) loadNamesForLetter(letter);
+      }, i * 300); // stagger by 300ms each so they don't all fire at once
     });
+  }
+
+  // Start fetching as soon as the user types the first letter
+  input.addEventListener("input", function () {
+    const val = input.value.trim();
+    if (val.length === 0) {
+      currentLetterSet = null;
+      currentFetchLetter = null;
+      return;
+    }
+    const firstLetter = val[0].toLowerCase();
+    if (!/^[a-z]$/.test(firstLetter)) return;
+
+    // Only trigger a new fetch if the first letter has changed
+    if (currentFetchLetter !== firstLetter) {
+      loadNamesForLetter(firstLetter);
+    }
+  });
 
   let goodNameIndex = 0;
   let cycleTimer = null;
@@ -224,6 +274,9 @@
   setInterval(loadCurrentName, 5000);
   resetCycleTimer();
 
+  // Kick off background prefetch after page has settled
+  setTimeout(prefetchCommonLetters, 2000);
+
   btn.addEventListener("click", function () {
     const rawInput   = input.value.trim();
     const lowerInput = rawInput.toLowerCase();
@@ -236,14 +289,16 @@
       return;
     }
 
-    // Still loading the approved list — ask them to wait
-    if (approvedNames === null) {
+    const firstLetter = lowerInput[0];
+
+    // Still downloading the file for this letter
+    if (currentLetterSet === null && currentFetchLetter === firstLetter) {
       statusMsg.textContent = "Still loading, please try again.";
       return;
     }
 
-    // Check against approved list — must be an exact match
-    if (!approvedNames.has(lowerInput)) {
+    // Letter file missing or empty
+    if (!currentLetterSet || !currentLetterSet.has(lowerInput)) {
       statusMsg.textContent = "That name is not available.";
       input.value = "";
       return;
