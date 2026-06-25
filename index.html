@@ -130,20 +130,6 @@
 <script>
   const FIREBASE_URL = "https://my-crush-278a7-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-  // *** EXACT MATCH BLOCK LIST ***
-  const listA = ["faggot", "cunny", "cunni", "diddy", "skank","vag", "slit" ,"chesticle", "testicle" ,"testicles" ,"clit" ,"dilf" ,"milf","di1f" ,"mi1f" ,"hitler" ,"hitler", "stalin" , "putin", "Trump", "hardon" , "jism"  ];
-  const listB = ["s1ut", "hitler", "fa99ot", "fagg0f", "homo", "anus", "arsehole", "azzhole", "bollocks", "nig" , "nog","nogger", "niga" , "nigga", "ni99er", "cum" ,"cumming" ,"currymuncher" ,"darkie","darkies", "fellatio","ghey", "ghay", "jewboy" ];
-  const listC = ["nazi", "hoe", "skank", "whore", "d1ck", "balls", "balllicker" ,"bigbreasts" ,"vaglna","bestiality" ,"biatch" ,"bumfuck" ,"bumfucker" ,"cntz", "cnts", "cnut" ,"cracker",  "gypsys", "hezbollah", "hamas", "isis" ,"jisim" ,"jizim" , "kkk" ,"tit", "titty", "titties" ];
-  const allNames = [...listA, ...listB, ...listC];
-
-  // *** CONTAINS BLOCK LIST ***
-  const blockedWords = [
-    "bitch", "nigger", "shit","nazi", "hoe", "skank", "whore", "d1ck", "cunt", "slut", "whore", "vagina", "cock" ,"dyke", "dike" ,"lezbo" ,"ass", "penis","arrse",  "arse", "cunt", "fag", "nazi","naz1", "pussy" , "slut", "wank", "jerk" , "blowjob","fatfucker", "boner", "bum", "butt"  , "dipshit" ,"peepee" ,"poopoo", "holestuffer", "massterb", "masterb", "master", "mastur",
-    "fuck", "lick", "fanny", "dick","d1ck", "cock", "chink", "slant" , "f4g" , "fa9", "anal", "bareback", "bastard", "boobie", "booby", "diaper", "gook", "hardcore", "jackoff", "kike", "kyke", "molest", "muff", "negro", "negr0", "negres", "niggar", "nigger" ,"niggah", "breast",
-    "boob", "booob", "boooob", "booooob", "b00b", "b000b", "b0000b", "b00000b" , "breast" , "gay", "lesbian", "lezbian" ,"dildo" ,"dingleber", "golliwog", "goldenshower" , "fukah", "fuker", "fukkah", "fukker", "nigg", "orgasim", "terror",
-    "bukake", "bukkake" ,"crotch", "creampie" ,"deepthroat" ,"doggiestyle" ,"douche" ,"doublepenetration", "ejaculat" ,"ejackulat" ,"fanny", "fart", "fcuk", "feltch" ,"fuktard", "goddam", "cammeltoe", "paedophile" , "peeenus" ,"pantie" ,"panty"
-  ];
-
   // *** GOOD NAMES — cycled automatically when no submission for 5 minutes ***
   const goodNames = [
     "Emma", "Liam", "Olivia", "Noah", "Ava", "Jack", "Charlotte", "Morgan", "Johnny"
@@ -156,17 +142,31 @@
   const input       = document.getElementById("name-input");
   const btn         = document.getElementById("upload-btn");
 
+  // Approved names loaded from names.txt — stored as a Set for fast lookup
+  let approvedNames = null; // null = still loading, Set = ready
+
+  // Load approved names from names.txt on page start
+  fetch("names.txt")
+    .then(r => {
+      if (!r.ok) throw new Error("Could not load names list");
+      return r.text();
+    })
+    .then(text => {
+      approvedNames = new Set(
+        text.split("\n")
+            .map(n => n.trim().toLowerCase())
+            .filter(n => n.length > 0)
+      );
+    })
+    .catch(() => {
+      // If names.txt fails to load, fail open with a warning in console
+      // but don't break the page — you can choose to fail closed instead
+      console.warn("names.txt could not be loaded. All names will be blocked.");
+      approvedNames = new Set(); // empty set = nothing gets through
+    });
+
   let goodNameIndex = 0;
   let cycleTimer = null;
-
-  function containsInvalidCharacters(text) {
-    return /[^a-zA-Z]/.test(text);
-  }
-
-  function containsBlockedWord(text) {
-    const lower = text.toLowerCase();
-    return blockedWords.some(word => lower.includes(word.toLowerCase()));
-  }
 
   function publishNextGoodName() {
     const name = goodNames[goodNameIndex % goodNames.length];
@@ -216,7 +216,7 @@
       .catch(() => {
         nameDisplay.textContent = "—";
         statusMsg.style.color = "white";
-        statusMsg.textContent = "....";
+        statusMsg.textContent = "Could not connect. Check Firebase URL.";
       });
   }
 
@@ -236,13 +236,14 @@
       return;
     }
 
-    if (containsInvalidCharacters(rawInput)) {
-      statusMsg.textContent = "Letters only please.";
-      input.value = "";
+    // Still loading the approved list — ask them to wait
+    if (approvedNames === null) {
+      statusMsg.textContent = "Still loading, please try again.";
       return;
     }
 
-    if (allNames.includes(lowerInput) || containsBlockedWord(rawInput)) {
+    // Check against approved list — must be an exact match
+    if (!approvedNames.has(lowerInput)) {
       statusMsg.textContent = "That name is not available.";
       input.value = "";
       return;
@@ -277,6 +278,5 @@
       });
   });
 </script>
-
 </body>
 </html>
